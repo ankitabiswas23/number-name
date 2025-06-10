@@ -1,0 +1,159 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Number Name ⇄ Numeral Converter</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <style>
+    :root {
+      --sage: #c7d8c6;
+      --pink: #fce4ec;
+    }
+  </style>
+</head>
+<body class="bg-gradient-to-br from-[var(--sage)] to-[var(--pink)] min-h-screen flex items-center justify-center px-4">
+  <div class="bg-white shadow-xl rounded-2xl p-8 w-full max-w-md border border-pink-100">
+    <h1 class="text-2xl font-bold text-center text-gray-800 mb-6">Number Name ⇄ Numeral Converter</h1>
+
+    <div class="mb-4">
+      <label class="block text-gray-700 font-semibold mb-2">Choose Conversion</label>
+      <select id="conversionType" class="w-full p-2 border rounded-xl bg-[var(--pink)] text-gray-800">
+        <option value="numberToWords">Number → Words</option>
+        <option value="wordsToNumber">Words → Number</option>
+      </select>
+    </div>
+
+    <div class="mb-4">
+      <label class="block text-gray-700 font-semibold mb-2">Enter Value</label>
+      <input id="inputValue" type="text" class="w-full p-2 border rounded-xl bg-[var(--sage)] text-gray-800" placeholder="Type here...">
+    </div>
+
+    <button onclick="convert()" class="w-full bg-pink-500 hover:bg-pink-600 text-white py-2 px-4 rounded-xl font-semibold transition">Convert</button>
+
+    <div class="mt-6">
+      <h2 class="text-lg font-semibold text-gray-700 mb-2">Result:</h2>
+      <p id="result" class="text-xl text-gray-900 font-mono break-words"></p>
+    </div>
+
+    <div class="mt-4">
+      <p id="tip" class="text-sm italic text-pink-700 font-medium"></p>
+    </div>
+  </div>
+
+  <script>
+    function numberToWords(num) {
+      const a = ["", "one", "two", "three", "four", "five", "six", "seven", "eight", "nine", "ten",
+        "eleven", "twelve", "thirteen", "fourteen", "fifteen", "sixteen", "seventeen", "eighteen", "nineteen"];
+      const b = ["", "", "twenty", "thirty", "forty", "fifty", "sixty", "seventy", "eighty", "ninety"];
+      const g = ["", " thousand", " million", " billion", " trillion"];
+
+      if (isNaN(num)) return "Invalid number";
+      if (num === 0) return "zero";
+
+      let str = "";
+      let i = 0;
+
+      while (num > 0) {
+        let chunk = num % 1000;
+        if (chunk > 0) {
+          let part = "";
+          if (chunk > 99) {
+            part += a[Math.floor(chunk / 100)] + " hundred ";
+            chunk %= 100;
+          }
+          if (chunk < 20) {
+            part += a[chunk];
+          } else {
+            part += b[Math.floor(chunk / 10)];
+            if (chunk % 10 > 0) part += "-" + a[chunk % 10];
+          }
+          str = part + g[i] + (str ? " " + str : "");
+        }
+        num = Math.floor(num / 1000);
+        i++;
+      }
+      return str.trim();
+    }
+
+    function wordsToNumber(words) {
+      const smallNumbers = {
+        "zero": 0, "one": 1, "two": 2, "three": 3, "four": 4,
+        "five": 5, "six": 6, "seven": 7, "eight": 8, "nine": 9,
+        "ten": 10, "eleven": 11, "twelve": 12, "thirteen": 13,
+        "fourteen": 14, "fifteen": 15, "sixteen": 16,
+        "seventeen": 17, "eighteen": 18, "nineteen": 19
+      };
+      const tens = {
+        "twenty": 20, "thirty": 30, "forty": 40,
+        "fifty": 50, "sixty": 60, "seventy": 70,
+        "eighty": 80, "ninety": 90
+      };
+      const scales = {
+        "hundred": 100,
+        "thousand": 1000,
+        "million": 1_000_000,
+        "billion": 1_000_000_000,
+        "trillion": 1_000_000_000_000
+      };
+
+      const tipEl = document.getElementById("tip");
+      tipEl.textContent = "";
+
+      let current = 0;
+      let total = 0;
+
+      const wordsArray = words.toLowerCase().replace(/-/g, ' ').split(/\s+/);
+      let isAllSingleDigits = wordsArray.every(w => smallNumbers.hasOwnProperty(w));
+
+      if (isAllSingleDigits && wordsArray.length > 1) {
+        const digits = wordsArray.map(word => smallNumbers[word]).join('');
+        const suggestedNumber = parseInt(digits);
+        const natural = numberToWords(suggestedNumber);
+        tipEl.textContent = `💡 Tip: Don’t say '${words}', say '${natural}' instead!`;
+        return suggestedNumber;
+      }
+
+      wordsArray.forEach(word => {
+        if (smallNumbers[word] != null) {
+          current += smallNumbers[word];
+        } else if (tens[word]) {
+          current += tens[word];
+        } else if (word === "hundred") {
+          current *= 100;
+        } else if (scales[word]) {
+          total += current * scales[word];
+          current = 0;
+        } else {
+          throw `Unrecognized word: '${word}'`;
+        }
+      });
+
+      return total + current;
+    }
+
+    function convert() {
+      const conversionType = document.getElementById("conversionType").value;
+      const input = document.getElementById("inputValue").value.trim();
+      const resultEl = document.getElementById("result");
+      const tipEl = document.getElementById("tip");
+      let result = "";
+
+      try {
+        if (conversionType === "numberToWords") {
+          const num = parseInt(input);
+          if (isNaN(num)) throw "Please enter a valid number.";
+          result = numberToWords(num);
+          tipEl.textContent = "";
+        } else {
+          result = wordsToNumber(input);
+        }
+        resultEl.textContent = result;
+      } catch (e) {
+        resultEl.textContent = "Error: " + e;
+        tipEl.textContent = "";
+      }
+    }
+  </script>
+</body>
+</html>
