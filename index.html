@@ -7,53 +7,62 @@
   <script src="https://cdn.tailwindcss.com"></script>
   <style>
     :root {
-      --sage: #c7d8c6;
-      --pink: #fce4ec;
+      --green-1: #e5f2ce;
+      --green-2: #c9e39c;
+      --green-3: #a5d672;
+      --green-4: #7bb05b;
+      --green-5: #4c7743;
     }
   </style>
 </head>
-<body class="bg-gradient-to-br from-[var(--sage)] to-[var(--pink)] min-h-screen flex items-center justify-center px-4">
-  <div class="bg-white shadow-xl rounded-2xl p-8 w-full max-w-md border border-pink-100">
-    <h1 class="text-2xl font-bold text-center text-gray-800 mb-6">Number Name ⇄ Numeral Converter</h1>
+<body class="bg-gradient-to-br from-[var(--green-1)] to-[var(--green-2)] min-h-screen flex flex-col justify-between">
 
-    <div class="mb-4">
-      <label class="block text-gray-700 font-semibold mb-2">Choose Conversion</label>
-      <select id="conversionType" class="w-full p-2 border rounded-xl bg-[var(--pink)] text-gray-800">
-        <option value="numberToWords">Number → Words</option>
-        <option value="wordsToNumber">Words → Number</option>
-      </select>
+  <!-- Main App -->
+  <main class="flex-grow flex items-center justify-center px-4">
+    <div class="bg-white shadow-xl rounded-2xl p-8 w-full max-w-md border border-[var(--green-2)]">
+      <h1 class="text-2xl font-bold text-center text-[var(--green-5)] mb-6">Number Name ⇄ Numeral Converter</h1>
+
+      <div class="mb-4">
+        <label class="block text-[var(--green-5)] font-semibold mb-2">Choose Conversion</label>
+        <select id="conversionType" class="w-full p-2 border rounded-xl bg-[var(--green-2)] text-[var(--green-5)]">
+          <option value="numberToWords">Number → Words</option>
+          <option value="wordsToNumber">Words → Number</option>
+        </select>
+      </div>
+
+      <div class="mb-4">
+        <label class="block text-[var(--green-5)] font-semibold mb-2">Enter Value</label>
+        <input id="inputValue" type="text" class="w-full p-2 border rounded-xl bg-[var(--green-1)] text-[var(--green-5)]" placeholder="Type here...">
+      </div>
+
+      <button onclick="convert()" class="w-full bg-[var(--green-5)] hover:bg-[var(--green-4)] text-white py-2 px-4 rounded-xl font-semibold transition">Convert</button>
+
+      <div class="mt-6">
+        <h2 class="text-lg font-semibold text-[var(--green-5)] mb-2">Result:</h2>
+        <p id="result" class="text-xl text-gray-900 font-mono break-words"></p>
+      </div>
+
+      <div class="mt-4">
+        <p id="tip" class="text-sm italic text-[var(--green-4)] font-medium"></p>
+      </div>
     </div>
+  </main>
 
-    <div class="mb-4">
-      <label class="block text-gray-700 font-semibold mb-2">Enter Value</label>
-      <input id="inputValue" type="text" class="w-full p-2 border rounded-xl bg-[var(--sage)] text-gray-800" placeholder="Type here...">
-    </div>
+  <!-- Footer with Green Band -->
+  <footer class="bg-[var(--green-4)] text-center text-sm text-white py-3 rounded-t-xl shadow-inner">
+    &copy; Ankita Biswas 2025
+  </footer>
 
-    <button onclick="convert()" class="w-full bg-pink-500 hover:bg-pink-600 text-white py-2 px-4 rounded-xl font-semibold transition">Convert</button>
-
-    <div class="mt-6">
-      <h2 class="text-lg font-semibold text-gray-700 mb-2">Result:</h2>
-      <p id="result" class="text-xl text-gray-900 font-mono break-words"></p>
-    </div>
-
-    <div class="mt-4">
-      <p id="tip" class="text-sm italic text-pink-700 font-medium"></p>
-    </div>
-  </div>
-
+  <!-- JS Logic (unchanged) -->
   <script>
     function numberToWords(num) {
       const a = ["", "one", "two", "three", "four", "five", "six", "seven", "eight", "nine", "ten",
         "eleven", "twelve", "thirteen", "fourteen", "fifteen", "sixteen", "seventeen", "eighteen", "nineteen"];
       const b = ["", "", "twenty", "thirty", "forty", "fifty", "sixty", "seventy", "eighty", "ninety"];
       const g = ["", " thousand", " million", " billion", " trillion"];
-
       if (isNaN(num)) return "Invalid number";
       if (num === 0) return "zero";
-
-      let str = "";
-      let i = 0;
-
+      let str = "", i = 0;
       while (num > 0) {
         let chunk = num % 1000;
         if (chunk > 0) {
@@ -100,9 +109,7 @@
       const tipEl = document.getElementById("tip");
       tipEl.textContent = "";
 
-      let current = 0;
-      let total = 0;
-
+      let current = 0, total = 0;
       const wordsArray = words.toLowerCase().replace(/-/g, ' ').split(/\s+/);
       let isAllSingleDigits = wordsArray.every(w => smallNumbers.hasOwnProperty(w));
 
@@ -115,18 +122,11 @@
       }
 
       wordsArray.forEach(word => {
-        if (smallNumbers[word] != null) {
-          current += smallNumbers[word];
-        } else if (tens[word]) {
-          current += tens[word];
-        } else if (word === "hundred") {
-          current *= 100;
-        } else if (scales[word]) {
-          total += current * scales[word];
-          current = 0;
-        } else {
-          throw `Unrecognized word: '${word}'`;
-        }
+        if (smallNumbers[word] != null) current += smallNumbers[word];
+        else if (tens[word]) current += tens[word];
+        else if (word === "hundred") current *= 100;
+        else if (scales[word]) { total += current * scales[word]; current = 0; }
+        else throw `Unrecognized word: '${word}'`;
       });
 
       return total + current;
